@@ -1,5 +1,6 @@
 const express = require("express");
 const bodyParser = require("body-parser");
+const date = require(__dirname + "/date.js");
 
 const app = express();
 
@@ -7,26 +8,33 @@ app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
-let listItems = [];
+const listItems = []; //Only if you are "pushings" to the array; no assigning;
+const workItems = [];
+
+const day = date.getDate();
 
 app.get("/", function (req, res) {
-  let today = new Date();
-
-  const options = {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-  };
-
-  let day = today.toLocaleDateString("en-US", options);
-
-  res.render("list", { typeOfDay: day, newListItems: listItems });
+  res.render("list", { listTitle: day, newListItems: listItems });
 });
 
 app.post("/", function (req, res) {
   const item = req.body.newItem;
-  listItems.push(item);
-  res.redirect("/");
+  console.log(req.body);
+  if (req.body.list === "Work") {
+    workItems.push(item);
+    res.redirect("/work");
+  } else {
+    listItems.push(item);
+    res.redirect("/");
+  }
+});
+
+app.get("/work", function (req, res) {
+  res.render("list", { listTitle: "Work", newListItems: workItems });
+});
+
+app.get("/about", function (req, res) {
+  res.render("about");
 });
 
 app.listen(3000, function () {
